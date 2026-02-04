@@ -1,0 +1,35 @@
+config:
+  target: "https://jsonplaceholder.typicode.com"
+ 
+  payload:
+    path: "data.csv"
+    fields:
+      - "postTitle"
+      - "postBody" 
+    order: sequence
+
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Load Test Phase"
+
+  plugins:
+    ensure: {}
+  ensure:
+    thresholds:
+      - "http.response_time.p95": 1000 
+    conditions:
+      - expression: "vusers.failed == 0"
+      - expression: "http.request_rate >= 1" 
+
+scenarios:
+  - name: "Testing Posts API"
+    flow:
+      - get:
+          url: "/posts"
+      - post:
+          url: "/posts"
+          json:
+            title: "{{ postTitle }}"
+            body: "{{ postBody }}"
+            userId: 1
